@@ -1,0 +1,20 @@
+<legend><a data-toggle="collapse" data-parent="#accordion" href="#prerequisites">Prerequisites Required</a></legend>
+<div id="prerequisites" class="panel-collapse collapse in">
+All logic groups must be true to meet the namespace prerequisites.
+<table class="table table-bordered">
+	<thead>
+		<tr><th width="10%">Logic</th><th>Expression</th><th style="width:1%; white-space:nowrap;"></th></tr>
+	</thead>
+	<tbody>
+		<tr>
+		{% for condition in namespace.prerequisites %}
+			{% include "condition_subtable.html" with condition_type="prerequisite" %}
+		{% endfor %}
+		<tr>
+			<td colspan="3" align="center">
+				<button class="btn btn-default" data-toggle="modal" data-target="#condition_modal" onclick="assign_modal('condition_modal', '{{ namespace.model.id }}', 'prerequisite');">Add Prerequisite Group</button>
+			</td>
+		</tr>
+	</tbody>
+</table>
+</div>

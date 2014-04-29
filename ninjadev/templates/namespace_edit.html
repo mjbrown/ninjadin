@@ -1,0 +1,178 @@
+{% extends "base-namespaces.html" %}
+
+{% load staticfiles %}
+
+{% block namespaces-content %}
+<h1>{{ namespace.name }}</h1>
+<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/" method="POST">
+	{% csrf_token %}
+	<fieldset>
+       <legend>Namespace Properties</legend>
+       <div class="row">
+       		<div class="col-lg-6">
+	       		<div class="input-group">
+			    	<input type="text" name="name" value="{{ namespace.model.name }}" class="form-control"/>
+			    	<input type="hidden" name="type" value="{{ namespace.model.type }}" id="namespace_type" />
+			    	<div class="input-group-btn">
+				    	<button type="button" id="namespace_type_dropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{ namespace.model.type }} <span class="caret"></span></button>
+				        <ul class="dropdown-menu pull-right">
+				          <li><a href="#" onclick="document.getElementById('namespace_type').value = 'Abstract'; document.getElementById('namespace_type_dropdown').innerHTML = 'Abstract <span class=\'caret\'></span>';">Abstract</a></li>
+				          <li><a href="#" onclick="document.getElementById('namespace_type').value = 'Action'; document.getElementById('namespace_type_dropdown').innerHTML = 'Action <span class=\'caret\'></span>';">Action</a></li>
+				          <li><a href="#" onclick="document.getElementById('namespace_type').value = 'Attack'; document.getElementById('namespace_type_dropdown').innerHTML = 'Attack <span class=\'caret\'></span>';">Attack</a></li>
+				          <li><a href="#" onclick="document.getElementById('namespace_type').value = 'Effect'; document.getElementById('namespace_type_dropdown').innerHTML = 'Effect <span class=\'caret\'></span>';">Effect</a></li>
+				        </ul>
+			    		<button name="save" type="submit" class="btn btn-primary">Save</button>
+			    	</div>
+	       		</div>
+	       	</div>
+	   </div>
+   </fieldset>
+</form>
+<br>
+<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/" method="POST">
+	{% csrf_token %}
+	   <legend>Namespace Group(s)</legend>
+		<input type="hidden" name="choice_type" value="groups" />
+	   {% include "list-input.html" with existing_list=namespace.groups unique_name="typeahead_groups" %}
+</form>
+<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/" method="POST">
+	{% csrf_token %}
+		<legend>Inherits From Namespace(s)</legend>
+		<input type="hidden" name="choice_type" value="inherits" />
+		{% include "list-input.html" with existing_list=namespace.inherits unique_name="typeahead_inherits" %}
+</form>
+{% include "namespace_modal.html" with modal_id="condition" modal_title="Condition" form=namespace.forms.PrerequisiteForNamespaceForm %}
+{% include "namespace_modal.html" with modal_id="numeric_condition" modal_title="Numeric" form=namespace.forms.NumericConditionForPrerequisiteForm %}
+{% include "namespace_modal.html" with modal_id="logical_condition" modal_title="Logical" form=namespace.forms.LogicalConditionForPrerequisiteForm %}
+{% include "add_prerequisite.html" %}
+
+<legend><a data-toggle="collapse" data-parent="#accordion" href="#numerics">Numeric Bonuses/Penalties</a></legend>
+<div id="numerics" class="panel-collapse collapse in">
+{% include "namespace_table.html" with columns=namespace.numeric_columns parent=namespace.numerics table_type="numeric" %}
+</div>
+{% include "namespace_modal.html" with modal_id="numeric" modal_title="Numeric" modal_contents="add_numeric_to_namespace.html" %}
+
+<legend><a data-toggle="collapse" data-parent="#accordion" href="#logicals">Logical Properties Applied</a></legend>
+<div id="logicals" class="panel-collapse collapse in">
+{% include "namespace_table.html" with columns=namespace.logical_columns parent=namespace.logicals table_type="logical" %}
+</div>
+{% include "namespace_modal.html" with modal_id="logical" modal_title="Logical" modal_contents="add_logical_to_namespace.html" %}
+
+<legend><a data-toggle="collapse" data-parent="#accordion" href="#subspaces">Additional Namespaces Applied</a></legend>
+<div id="subspaces" class="panel-collapse collapse in">
+{% include "namespace_table.html" with columns=namespace.subspace_columns parent=namespace.subspaces table_type="subspace" %}
+</div>
+{% include "namespace_modal.html" with modal_id="subspace" modal_title="Subspace" modal_contents="add_subspace_to_namespace.html" %}
+
+<legend><a data-toggle="collapse" data-parent="#accordion" href="#choices">Additional Namespace Selections</a></legend>
+<div id="choices" class="panel-collapse collapse in">
+	<table class="table table-bordered">
+		<thead>
+			<tr><th>Namespace Type</th><th>Specific Namespaces</th><th></th></tr>
+		</thead>
+		<tbody>
+			{% for choice in namespace.choices %}
+				<tr>
+					<td>
+						<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+							{% csrf_token %}
+							<input type="hidden" name="choice_id" value="{{ choice.model.id }}" />
+							<input type="hidden" name="choice_type" value="group" />
+							{% include "list-input.html" with existing_list=choice.groups %}
+						</form>
+					</td>
+					<td>
+						<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+							{% csrf_token %}
+							<input type="hidden" name="choice_id" value="{{ choice.model.id }}" />
+							<input type="hidden" name="choice_type" value="namespace" />
+							{% include "list-input.html" with existing_list=choice.namespace_names %}
+						</form>
+					</td>
+					<td>
+						<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+							{% csrf_token %}
+							<button name="remove_choice" type="submit" class="btn btn-default" value="{{ choice.model.id }}"><span class="glyphicon glyphicon-remove"></span></button>
+						</form>
+					</td>
+				</tr>
+			</form>
+			{% endfor %}
+		<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+			{% csrf_token %}
+			<tr><td colspan="3" align="center"><button class="btn btn-default btn-xs" name="add_choice_to_namespace">Create New</button></td></tr>
+		</form>
+		</tbody>
+	</table>
+</div>
+{% endblock %}
+
+{% block namespaces-scripts %}
+<script>
+function assign_modal(modal_id, hidden_value, form_action)
+{
+	document.getElementById(modal_id + '_hidden_id').value = hidden_value
+	document.getElementById(modal_id + '_form').action = "{% url "namespaces-base" %}/{{ namespace.slug_name }}/" + form_action;
+}
+$('#typeahead_groups').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  name: 'typeahead_list',
+	  displayKey: 'value',
+	  source: substringMatcher(namespace_groups)
+	});
+
+$('#typeahead_inherits').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  name: 'typeahead_list',
+	  displayKey: 'value',
+	  source: substringMatcher(namespace_list)
+	});
+
+$('#typeahead_numeric').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  name: 'typeahead_list',
+	  displayKey: 'value',
+	  source: substringMatcher(namespace_list)
+	});
+
+$('#typeahead_logical').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  name: 'typeahead_list',
+	  displayKey: 'value',
+	  source: substringMatcher(namespace_list)
+	});
+
+$('#typeahead_subspace').typeahead({
+	  hint: true,
+	  highlight: true,
+	  minLength: 1
+	},
+	{
+	  name: 'typeahead_list',
+	  displayKey: 'value',
+	  source: substringMatcher(namespace_list)
+	});
+
+
+//$('#prerequisites').collapse('hide')
+//$('#numerics').collapse('hide')
+//$('#logicals').collapse('hide')
+//$('#choices').collapse('hide')
+</script>
+{% endblock %}

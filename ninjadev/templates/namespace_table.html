@@ -1,0 +1,33 @@
+Conditions follow the same rules as prerequisites, except they are situational.
+<table class="table table-bordered">
+	<thead>
+		<tr>{% for column in columns %}<th>{{ column }}</th>{% endfor %}</tr>
+	</thead>
+	<tbody>
+		{% for child in parent %}
+		<tr>
+			{% for column in child.fields %}<td rowspan="{{ child.total_conditions_plusone }}" style="width:1%; white-space:nowrap;">{{ column }}</td>{% endfor %}
+			{% for condition in child.conditions %}
+				{% include "condition_subtable.html" with condition_type=table_type %}
+			{% endfor %}
+			<td colspan="2" align="center">
+				<button class="btn btn-default btn-xs" data-toggle="modal" data-target="#condition_modal" onclick="assign_modal('condition_modal', '{{ child.model.id }}', '{{ table_type }}')">Add Condition</button>
+			</td>
+			<td style="width: 1%; white-space:nowrap;">
+				{% if child.total_conditions_plusone == 1 %}
+				<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/{{ table_type }}" method="POST">
+			    {% csrf_token %}
+					<input type="hidden" name="{{ table_type }}_id" value="{{ child.model.id }}" />
+					<button class="btn btn-default btn-xs" type="submit" name="remove_from_namespace"><span class="glyphicon glyphicon-remove"></span></button>
+				</form>
+				{% endif %}
+			</td>
+		</tr>
+		{% endfor %}
+		<tr>
+			<td colspan="7" align="center">
+				<button class="btn btn-default btn-xs" data-toggle="modal" data-target="#{{ table_type }}_modal">Create New</button>
+			</td>
+		</tr>
+	</tbody>
+</table>

@@ -1,0 +1,16 @@
+{% extends "base-namespaces.html" %}
+
+{% load staticfiles %}
+
+{% block namespaces-content %}
+<form action="{% url "namespaces-base" %}" method="POST">
+	{% csrf_token %}
+	<fieldset>
+       <legend>Create New</legend>
+       {% include "strapped-form.html" %}
+   </fieldset>
+   <div class="form-actions">
+       <button name="namespace_save" type="submit" class="btn btn-primary" >Create</button>
+   </div>
+</form>
+{% endblock %}

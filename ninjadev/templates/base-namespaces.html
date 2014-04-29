@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+<form action="{% url "namespaces-search" %}" class="bs-example bs-example-form" role="form" method="post">
+	{% csrf_token %}
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="input-group">
+				<input name="search_namespaces" id="search_namespaces" class="form-control" type="text" placeholder="Enter Namespace Name">
+				<div class="input-group-btn">
+					<button name="typeahead_go" type="submit" class="btn btn-primary">Go</button>
+					<button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<span class="caret"></span>
+						<span class="sr-only">Toggle Dropdown</span>
+					</button>
+					<ul class="dropdown-menu pull-right" role="menu">
+						<li>This doesn't do anything yet...</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+{% block namespaces-content %}{% endblock %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/basic-typeahead.js' %}"></script>
+<script>
+	var namespace_list = [{% for i in namespaces.names %}'{{i}}'{% if not forloop.last %},{% endif %}{% endfor %}];
+	var namespace_groups = [{% for i in namespaces.groups %}'{{i}}'{% if not forloop.last %},{% endif %}{% endfor %}];
+	$('#search_namespaces').typeahead({
+		  hint: true,
+		  highlight: true,
+		  minLength: 1
+		},
+		{
+		  name: 'typeahead_list',
+		  displayKey: 'value',
+		  source: substringMatcher(namespace_list)
+		});
+
+</script>
+{% block namespaces-scripts %}{% endblock %}
+
+{% endblock %}

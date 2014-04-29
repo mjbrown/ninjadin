@@ -1,0 +1,19 @@
+<!-- Inputs: existing_list, unique_name, unique_iter -->
+<div class="row">
+	<div class="col-lg-6">
+		<div class="input-group">
+			<input type="text" name="new_list_item" class="form-control" id="{{ unique_name }}{{ unique_iter }}"/>
+			<div class="input-group-btn">
+				<button name="add_create" type="submit" class="btn btn-primary">Add/Create</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-lg-6">
+		<div id="list_input_buttons">
+		{% for item in existing_list %}<button name="remove_item" type="submit" class="btn btn-default" value="{{ item }}">{{ item }} <span class="glyphicon glyphicon-remove"></span></button> {% endfor %}
+    	</div>
+	</div>
+</div>
+<br>

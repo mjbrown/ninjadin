@@ -1,0 +1,34 @@
+<!-- Inputs: condition, condition_type -->
+			<td style="vertical-align:middle; width:1%; white-space:nowrap;" rowspan="{{ condition.total_conditions_plusone }}">{{ condition.model.logic }}</td>
+			{% for numeric_condition in condition.numeric_conditions %}
+				{% if not forloop.first %}<tr> {% endif %}
+				<td>{{ numeric_condition.type }} {{ numeric_condition.comparator }} {{ numeric_condition.value }}</td>
+				<td><form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/{{ condition_type }}" method="POST">
+					{% csrf_token %}
+					<input type="hidden" name="numeric_id" value="{{ numeric_condition.id }}" />
+					<button type="submit" class="btn btn-default btn-xs" name="delete_numeric"><span class="glyphicon glyphicon-remove red"></span></button></form>
+				</td></tr>
+			{% endfor %}
+			{% for logical_condition in condition.logical_conditions %}
+				{% if not forloop.first %}<tr> {% endif %}
+				<td>{{ logical_condition.value}} {{ logical_condition.bool }} {{ logical_condition.key }}</td>
+				<td><form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/{{ condition_type }}" method="POST">
+					{% csrf_token %}
+					<input type="hidden" name="logical_id" value="{{ logical_condition.id }}" />
+					<button type="submit" class="btn btn-default btn-xs" name="delete_logical"><span class="glyphicon glyphicon-remove red"></span></button></form>
+				</td></tr>
+			{% endfor %}
+			<td align="center">
+				<button class="btn btn-default btn-xs" type="button" data-toggle="modal" data-target="#numeric_condition_modal" onclick="assign_modal('numeric_condition_modal', '{{ condition.model.id }}','{{ condition_type }}');">Add Numeric</button>
+				<button class="btn btn-default btn-xs" type="button" data-toggle="modal" data-target="#logical_condition_modal" onclick="assign_modal('logical_condition_modal', '{{ condition.model.id }}','{{ condition_type }}');">Add Logical</button>
+			</td>
+			<td>
+				{% if condition.total_conditions_plusone == 1 %}
+				<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/{{ condition_type }}" method="POST">
+			    {% csrf_token %}
+					<input type="hidden" name="condition_id" value="{{ condition.model.id }}" />
+					<button class="btn btn-default btn-xs" type="submit" name="remove_condition"><span class="glyphicon glyphicon-remove red"></span></button>
+				</form>
+				{% endif %}
+			</td>
+		</tr>
