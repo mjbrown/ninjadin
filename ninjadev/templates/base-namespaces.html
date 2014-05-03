@@ -2,21 +2,20 @@
 {% load staticfiles %}
 
 {% block content %}
-<form action="{% url "namespaces-search" %}" class="bs-example bs-example-form" role="form" method="post">
+<form action="{% url "namespaces-base" %}" class="bs-example bs-example-form" role="form" method="post">
 	{% csrf_token %}
 	<div class="row">
 		<div class="col-lg-6">
 			<div class="input-group">
 				<input name="search_namespaces" id="search_namespaces" class="form-control" type="text" placeholder="Enter Namespace Name">
+				<input type="hidden" name="operation" id="navigate" value="search" />
 				<div class="input-group-btn">
+					<button type="button" id="search_dropdown" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Search <span class="caret"></span></button>
+					<ul class="dropdown-menu pull-right">
+			            <li><a href="#" onclick="document.getElementById('navigate').value = 'search'; document.getElementById('search_dropdown').innerHTML = 'Search <span class=\'caret\'></span>';">Search</a></li>
+			            <li><a href="#" onclick="document.getElementById('navigate').value = 'create'; document.getElementById('search_dropdown').innerHTML = 'Create <span class=\'caret\'></span>';">Create</a></li>
+			        </ul>
 					<button name="typeahead_go" type="submit" class="btn btn-primary">Go</button>
-					<button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-						<span class="caret"></span>
-						<span class="sr-only">Toggle Dropdown</span>
-					</button>
-					<ul class="dropdown-menu pull-right" role="menu">
-						<li>This doesn't do anything yet...</li>
-					</ul>
 				</div>
 			</div>
 		</div>

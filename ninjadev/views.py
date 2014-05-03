@@ -24,11 +24,17 @@ from ninjadev.models import NumericConditionForSubspace
 from ninjadev.models import LogicalConditionForSubspace
 
 import ninjadev.forms
+import ninjadin.settings
 
 from django.template.loader import get_template
 from django.template import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect
 
+def login_required(view):
+    def f(request, *args, **kwargs):
+        if request.user.is_anonymous():
+            return view(request, *args, **kwargs)
+        return HttpResponseRedirect(ninjadin.settings.LOGIN_REDIRECT_URL)
 
 class NamespaceLists():
     names = Namespace.objects.all()
@@ -101,7 +107,7 @@ class SubspaceData(ConditionalData):
     CONDITION_CLS = ConditionForSubspace
     def __init__(self, model):
         super(SubspaceData, self).__init__(model)
-        self.fields = [model.subspace]
+        self.fields = [model.target]
 
 class Conditions():
     def __init__(self, model, numeric_cls, logical_cls):
@@ -128,33 +134,21 @@ class NamespaceView(object):
         pass
     
     @classmethod
-    def create(cls, request):
-        if request.method == 'POST':
-            form = ninjadev.forms.NamespaceForm(request.POST)
-            if form.is_valid():
-                model = form.save()
-                name = NamespaceName(model.name)
-                return HttpResponseRedirect(reverse("namespaces-base") + "/%s/" % name.slug)
-        else:
-            form = ninjadev.forms.NamespaceForm()
-        namespaces = [NamespaceName(str(i)) for i in Namespace.objects.all()]
-        context = RequestContext(request, {'namespaces': namespaces,
-                                           'form': form })
-        t = get_template("namespace_create.html")
-        html = t.render(context)
-        return HttpResponse(html)
-    
-    @classmethod
     def search_read(cls, request):
         namespaces = [NamespaceName(str(i)) for i in Namespace.objects.all()]
         search_result = namespaces
         if request.method == 'POST':
-            if "search_namespaces" in request.POST:
-                model = Namespace.objects.filter(name=request.POST["search_namespaces"])
-                if model:
-                    return HttpResponseRedirect(reverse("namespaces-base") + "/%s/" % NamespaceName(request.POST["search_namespaces"]).slug)
-                else:
-                    search_result = [NamespaceName(str(i)) for i in Namespace.objects.filter(name__contains=request.POST["search_namespaces"])]
+            model = Namespace.objects.filter(name=request.POST["search_namespaces"])
+            if model:
+                return HttpResponseRedirect(reverse("namespaces-base") + "%s/" % NamespaceName(request.POST["search_namespaces"]).slug)
+            if request.POST["operation"] == "search":
+                search_result = [NamespaceName(str(i)) for i in Namespace.objects.filter(name__contains=request.POST["search_namespaces"])]
+            elif request.POST["operation"] == "create":
+                if not request.user.is_authenticated():
+                    return HttpResponseRedirect(reverse('django.contrib.auth.views.login'))
+                model = Namespace.objects.create(name=request.POST["search_namespaces"])
+                redirect = reverse("namespaces-base") + "%s/" % request.POST["search_namespaces"].replace(' ', '-')
+                return HttpResponseRedirect(redirect)
         context = RequestContext(request, {'namespaces': NamespaceLists(),
                                            'search_result': search_result})
         t = get_template("namespace_search.html")
@@ -164,8 +158,10 @@ class NamespaceView(object):
     @classmethod
     def update_delete(cls, request, slug_name):
         namespace = NamespaceData(slug_name)
-        redirect = reverse("namespaces-base") + "/%s/" % slug_name
+        redirect = reverse("namespaces-base") + "%s/" % slug_name
         if request.method == 'POST':
+            if not request.user.is_authenticated():
+                return HttpResponseRedirect(reverse('django.contrib.auth.views.login'))
             if "namespace_delete" in request.POST:
                 namespace.model.delete()
                 return HttpResponseRedirect(redirect)
@@ -177,7 +173,7 @@ class NamespaceView(object):
                 namespace.model.name = request.POST["name"]
                 namespace.model.type = request.POST["type"]
                 namespace.model.save()
-                redirect = reverse("namespaces-base") + "/%s/" % namespace.model.name.replace(' ', '-')
+                redirect = reverse("namespaces-base") + "%s/" % namespace.model.name.replace(' ', '-')
                 return HttpResponseRedirect(redirect)
             elif "new_list_item" in request.POST:
                 if request.POST["choice_type"] == "groups":
@@ -254,6 +250,8 @@ table_dictionary = {"numeric": NumericTableDefinition,
 def table_POST_handler(request, slug_name, table_name):
     table = table_dictionary[table_name]
     if request.method == "POST":
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(reverse('django.contrib.auth.views.login'))
         if "add_%s" % table_name in request.POST:
             namespace = Namespace.objects.get(name=slug_name.replace('-', ' '))
             target = Namespace.objects.get(name=request.POST["target_namespace"])
@@ -291,11 +289,13 @@ def table_POST_handler(request, slug_name, table_name):
         elif "remove_from_namespace" in request.POST:
             model = table.TableModel.objects.get(id=request.POST['%s_id' % table.name])
             model.delete()
-        redirect = reverse("namespaces-base") + "/%s/#%ss" % (slug_name, table_name)
+        redirect = reverse("namespaces-base") + "%s/#%ss" % (slug_name, table_name)
         return HttpResponseRedirect(redirect)
 
 def choice_POST_handler(request, slug_name):
     if request.method == "POST":
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(reverse('django.contrib.auth.views.login'))
         if "add_choice_to_namespace" in request.POST:
             namespace = Namespace.objects.get(name=slug_name.replace('-', ' '))
             inst = Choice(namespace=namespace)
@@ -321,6 +321,6 @@ def choice_POST_handler(request, slug_name):
             elif request.POST["choice_type"] == "namespace":
                 ref_namespace = Namespace.objects.get(name=request.POST["remove_item"])
                 model.namespace_names.remove(ref_namespace) 
-    redirect = reverse("namespaces-base") + "/%s/#choices" % slug_name
+    redirect = reverse("namespaces-base") + "%s/#choices" % slug_name
     return HttpResponseRedirect(redirect)
         

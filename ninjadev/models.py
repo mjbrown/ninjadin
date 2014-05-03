@@ -15,7 +15,7 @@ class Condition(models.Model):
              ("NOR", "NOR"))
     logic = models.CharField(max_length=3,
                              choices=LOGIC,
-                             default='&&')
+                             default='AND')
     
 
 class Numeric(models.Model):

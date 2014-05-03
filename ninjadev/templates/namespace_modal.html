@@ -6,7 +6,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="{{ modal_id }}_modal_label">Create {{ modal_title }}</h4>
       </div>
-      <form id="{{ modal_id }}_modal_form" action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/{{ modal_id }}" method="POST">
+      <form id="{{ modal_id }}_modal_form" action="{% url "namespaces-base" %}{{ namespace.slug_name }}/{{ modal_id }}" method="POST">
       {% csrf_token %}
       <input type="hidden" id="{{ modal_id }}_modal_hidden_id" name="{{ modal_id }}_modal_hidden_id" value="{{ hidden_value }}" />
       <div class="modal-body">
@@ -15,7 +15,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" name="add_{{ modal_id }}" class="btn btn-primary">Add {{ modal_title }}</button>
+        <button id="add_{{ modal_id }}" type="submit" name="add_{{ modal_id }}" class="btn btn-primary">Add {{ modal_title }}</button>
       </div>
       </form>
     </div>

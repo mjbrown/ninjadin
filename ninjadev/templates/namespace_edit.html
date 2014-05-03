@@ -4,7 +4,7 @@
 
 {% block namespaces-content %}
 <h1>{{ namespace.name }}</h1>
-<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/" method="POST">
+<form action="{% url "namespaces-base" %}{{ namespace.slug_name }}/" method="POST">
 	{% csrf_token %}
 	<fieldset>
        <legend>Namespace Properties</legend>
@@ -29,13 +29,13 @@
    </fieldset>
 </form>
 <br>
-<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/" method="POST">
+<form action="{% url "namespaces-base" %}{{ namespace.slug_name }}/" method="POST">
 	{% csrf_token %}
 	   <legend>Namespace Group(s)</legend>
 		<input type="hidden" name="choice_type" value="groups" />
 	   {% include "list-input.html" with existing_list=namespace.groups unique_name="typeahead_groups" %}
 </form>
-<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/" method="POST">
+<form action="{% url "namespaces-base" %}{{ namespace.slug_name }}/" method="POST">
 	{% csrf_token %}
 		<legend>Inherits From Namespace(s)</legend>
 		<input type="hidden" name="choice_type" value="inherits" />
@@ -74,23 +74,23 @@
 			{% for choice in namespace.choices %}
 				<tr>
 					<td>
-						<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+						<form action="{% url "namespaces-base" %}{{ namespace.slug_name }}/choice" method="POST">
 							{% csrf_token %}
 							<input type="hidden" name="choice_id" value="{{ choice.model.id }}" />
 							<input type="hidden" name="choice_type" value="group" />
-							{% include "list-input.html" with existing_list=choice.groups %}
+							{% include "list-input.html" with existing_list=choice.groups unique_name="group" unique_iter=forloop.counter %}
 						</form>
 					</td>
 					<td>
-						<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+						<form action="{% url "namespaces-base" %}{{ namespace.slug_name }}/choice" method="POST">
 							{% csrf_token %}
 							<input type="hidden" name="choice_id" value="{{ choice.model.id }}" />
 							<input type="hidden" name="choice_type" value="namespace" />
-							{% include "list-input.html" with existing_list=choice.namespace_names %}
+							{% include "list-input.html" with existing_list=choice.namespace_names unique_name="namespace" unique_iter=forloop.counter %}
 						</form>
 					</td>
 					<td>
-						<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+						<form action="{% url "namespaces-base" %}{{ namespace.slug_name }}/choice" method="POST">
 							{% csrf_token %}
 							<button name="remove_choice" type="submit" class="btn btn-default" value="{{ choice.model.id }}"><span class="glyphicon glyphicon-remove"></span></button>
 						</form>
@@ -98,7 +98,7 @@
 				</tr>
 			</form>
 			{% endfor %}
-		<form action="{% url "namespaces-base" %}/{{ namespace.slug_name }}/choice" method="POST">
+		<form action="{% url "namespaces-base" %}{{ namespace.slug_name }}/choice" method="POST">
 			{% csrf_token %}
 			<tr><td colspan="3" align="center"><button class="btn btn-default btn-xs" name="add_choice_to_namespace">Create New</button></td></tr>
 		</form>
@@ -112,7 +112,7 @@
 function assign_modal(modal_id, hidden_value, form_action)
 {
 	document.getElementById(modal_id + '_hidden_id').value = hidden_value
-	document.getElementById(modal_id + '_form').action = "{% url "namespaces-base" %}/{{ namespace.slug_name }}/" + form_action;
+	document.getElementById(modal_id + '_form').action = "{% url "namespaces-base" %}{{ namespace.slug_name }}/" + form_action;
 }
 $('#typeahead_groups').typeahead({
 	  hint: true,

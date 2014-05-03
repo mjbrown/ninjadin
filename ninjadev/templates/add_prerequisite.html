@@ -12,7 +12,7 @@ All logic groups must be true to meet the namespace prerequisites.
 		{% endfor %}
 		<tr>
 			<td colspan="3" align="center">
-				<button class="btn btn-default" data-toggle="modal" data-target="#condition_modal" onclick="assign_modal('condition_modal', '{{ namespace.model.id }}', 'prerequisite');">Add Prerequisite Group</button>
+				<button id="add_prerequisite_button" class="btn btn-default" data-toggle="modal" data-target="#condition_modal" onclick="assign_modal('condition_modal', '{{ namespace.model.id }}', 'prerequisite');">Add Prerequisite Group</button>
 			</td>
 		</tr>
 	</tbody>
